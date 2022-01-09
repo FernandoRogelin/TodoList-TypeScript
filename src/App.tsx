@@ -1,26 +1,57 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import { useForm } from 'react-hook-form'
+
+import * as S from './styles'
+import Input from 'components/Input'
+import Button from 'components/Button'
+
+type FormStates = {
+  text: string
 }
 
-export default App;
+function App() {
+  const [list, setList] = useState<string[]>([])
+
+  const { handleSubmit, register, formState, setValue } = useForm<FormStates>({
+    mode: 'onChange'
+  })
+
+  function onSubmit(values: FormStates) {
+    setList([...list, values.text])
+    setValue('text', '')
+  }
+
+  function removeItem(index: number) {
+    setList(list.filter((item, i) => i !== index))
+  }
+
+  return (
+    <S.Wrapper>
+      <S.Container>
+        <S.Title>Todo-list ReactJS with TypeScript</S.Title>
+        <S.Form onSubmit={handleSubmit(onSubmit)}>
+          <Input
+            type="text"
+            error={formState.errors}
+            placeholder="Write a text here"
+            register={() => register('text', { required: 'Campo obrigatório' })}
+          />
+          <Button disabled={!formState.isValid || formState.isSubmitting}>
+            Add item
+          </Button>
+        </S.Form>
+        <S.List>
+          {list.map((item, index: number) => (
+            <S.Item key={index}>
+              {item}
+              <S.Remove onClick={() => removeItem(index)}>X</S.Remove>
+            </S.Item>
+          ))}
+        </S.List>
+      </S.Container>
+    </S.Wrapper>
+  )
+}
+
+export default App
